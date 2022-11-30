@@ -4,6 +4,7 @@
 
 ### Features
 
+- [#6541](https://github.com/blockscout/blockscout/pull/6541) - Integrate sig provider
 - [#6712](https://github.com/blockscout/blockscout/pull/6712) - API v2 update
 
 ### Fixes
