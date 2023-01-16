@@ -73,10 +73,16 @@ defmodule EthereumJSONRPC.Geth do
     debug_trace_transaction_timeout =
       Application.get_env(:ethereum_jsonrpc, __MODULE__)[:debug_trace_transaction_timeout]
 
+    tracer =
+      case Application.get_env(:ethereum_jsonrpc, __MODULE__)[:tracer] do
+        "js" -> @tracer
+        "call_tracer" -> "callTracer"
+      end
+
     request(%{
       id: id,
       method: "debug_traceTransaction",
-      params: [hash_data, %{tracer: @tracer, timeout: debug_trace_transaction_timeout}]
+      params: [hash_data, %{tracer: tracer, timeout: debug_trace_transaction_timeout}]
     })
   end
 
@@ -169,6 +175,7 @@ defmodule EthereumJSONRPC.Geth do
 
     internal_transaction_params =
       calls
+      |> prepare_calls()
       |> Stream.with_index()
       |> Enum.map(fn {trace, index} ->
         Map.merge(trace, %{
@@ -213,6 +220,95 @@ defmodule EthereumJSONRPC.Geth do
       })
 
     {:error, annotated_error}
+  end
+
+  defp prepare_calls(calls) do
+    case Application.get_env(:ethereum_jsonrpc, __MODULE__)[:tracer] do
+      "call_tracer" -> {calls, 0} |> parse_call_tracer_calls([], [], false) |> Enum.reverse()
+      "js" -> calls
+    end
+  end
+
+  def parse_call_tracer_calls(calls, acc, trace_address, inner? \\ true)
+  def parse_call_tracer_calls([], acc, _trace_address, _inner?), do: acc
+
+  def parse_call_tracer_calls(
+        {%{
+           "type" => type,
+           "from" => from,
+           "to" => to,
+           "gas" => gas
+         } = call, index},
+        acc,
+        trace_address,
+        inner?
+      ) do
+    new_trace_address = [index | trace_address]
+
+    {call_fields, optional_call_fields} =
+      case type do
+        creation_type when creation_type in ~w(CREATE CREATE2) ->
+          {%{
+             "type" => String.downcase(type),
+             "from" => from,
+             "createdContractAddressHash" => to,
+             "value" => Map.get(call, "value", "0x0"),
+             "gas" => gas,
+             "init" => call["input"],
+             "traceAddress" => if(inner?, do: Enum.reverse(new_trace_address), else: [])
+           },
+           %{
+             "error" => call["error"],
+             "createdContractAddressHash" => call["to"],
+             "createdContractCode" => call["output"],
+             "gasUsed" => call["gasUsed"]
+           }}
+
+        "SELFDESTRUCT" ->
+          {%{
+             "type" => String.downcase(type),
+             "from" => from,
+             "to" => to,
+             "value" => Map.get(call, "value", "0x0"),
+             "gas" => gas,
+             "gasUsed" => call["gasUsed"],
+             "traceAddress" => if(inner?, do: Enum.reverse(new_trace_address), else: [])
+           }, %{}}
+
+        call_type when call_type in ~w(CALL CALLCODE DELEGATECALL STATICCALL) ->
+          {%{
+             "type" => "call",
+             "callType" => String.downcase(type),
+             "from" => from,
+             "to" => to,
+             "value" => Map.get(call, "value", "0x0"),
+             "gas" => gas,
+             "input" => call["input"],
+             "traceAddress" => if(inner?, do: Enum.reverse(new_trace_address), else: [])
+           },
+           %{
+             "error" => call["error"],
+             "output" => call["output"],
+             "gasUsed" => call["gasUsed"]
+           }}
+      end
+
+    formatted_call =
+      Enum.reduce(optional_call_fields, call_fields, fn {key, value}, acc ->
+        if value, do: Map.put(acc, key, value), else: acc
+      end)
+
+    parse_call_tracer_calls(
+      Map.get(call, "calls", []),
+      [formatted_call | acc],
+      if(inner?, do: new_trace_address, else: [])
+    )
+  end
+
+  def parse_call_tracer_calls(calls, acc, trace_address, _inner) when is_list(calls) do
+    calls
+    |> Stream.with_index()
+    |> Enum.reduce(acc, &parse_call_tracer_calls(&1, &2, trace_address))
   end
 
   defp reduce_internal_transactions_params(internal_transactions_params) when is_list(internal_transactions_params) do
