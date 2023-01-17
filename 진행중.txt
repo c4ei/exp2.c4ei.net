@@ -1,0 +1,35 @@
+cd /home/dev/www/exp2.c4ei.net/docker-compose
+docker-compose -f docker-compose-no-build-geth.yml up -d
+
+exp.c4ei.net  3002 --> 4000
+
+docker ps
+sudo docker contianer kill
+sudo service docker stop
+ps -ef | grep -v grep | grep docker
+systemctl stop docker.socket
+systemctl stop docker.service
+systemctl stop containerd.service
+
+sudo service docker start
+
+sudo docker-compose --file 'docker-compose-no-build-geth.yml' --project-name 'docker-compose' down 
+
+sudo docker ps -a
+[sudo] password for dev: 
+CONTAINER ID   IMAGE                                               COMMAND                  CREATED        STATUS                        PORTS                                         NAMES
+f4ce3dbb5dab   blockscout/blockscout:latest                        "bash -c 'bin/blocks…"   2 hours ago    Up 8 minutes                  0.0.0.0:4000->4000/tcp, :::4000->4000/tcp     blockscout
+fb2ed2bf3084   redis:alpine                                        "docker-entrypoint.s…"   2 hours ago    Exited (255) 13 minutes ago                                                 redis_db
+245d2d44b2be   ghcr.io/blockscout/visualizer:latest                "./visualizer-server"    2 hours ago    Up 9 minutes                  0.0.0.0:8050->8050/tcp, :::8050->8050/tcp     visualizer
+5f3b30dd729a   ghcr.io/blockscout/smart-contract-verifier:latest   "./smart-contract-ve…"   2 hours ago    Up 9 minutes                  0.0.0.0:8043->8043/tcp, :::8043->8043/tcp     smart-contract-verifier
+8446844b02a7   postgres:14                                         "docker-entrypoint.s…"   2 hours ago    Up 9 minutes                  0.0.0.0:7432->5432/tcp, :::7432->5432/tcp     postgres
+################################################
+Docker container stop 시에 permission denied
+################################################
+sudo aa-remove-unknown
+################################################
+/home/dev/www/exp2.c4ei.net/.github/workflows/config.yml
+
+/home/dev/www/exp2.c4ei.net/apps/block_scout_web/assets/static/images
+LOGO=/images/blockscout_logo.svg
+LOGO_FOOTER=/images/blockscout_logo.svg

@@ -43,4 +43,4 @@ All of the configs assume the Ethereum JSON RPC is running at http://localhost:8
 
 In order to stop launched containers, run `docker-compose -d -f config_file.yml down`, replacing `config_file.yml` with the file name of the config which was previously launched.
 
-You can adjust BlockScout environment variables from `./envs/common-blockscout.env`. Descriptions of the ENVs are available in [the docs](https://docs.blockscout.com/for-developers/information-and-settings/env-variables).
+You can adjust BlockScout environment variables from `./envs/common-blockscout.env`. Descriptions of the ENVs are available in [the docs](https://docs.exp.c4ei.net/for-developers/information-and-settings/env-variables).
