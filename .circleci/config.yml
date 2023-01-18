@@ -7,7 +7,7 @@ jobs:
         environment:
           MIX_ENV: test
           # match POSTGRES_PASSWORD for postgres image below
-          PGPASSWORD: postgres
+          PGPASSWORD: postgres!23
           # match POSTGRES_USER for postgres image below
           PGUSER: postgres
 
@@ -502,7 +502,7 @@ jobs:
         environment:
           MIX_ENV: test
           # match POSTGRES_PASSWORD for postgres image below
-          PGPASSWORD: postgres
+          PGPASSWORD: postgres!23
           # match POSTGRES_USER for postgres image below
           PGUSER: postgres
           ETHEREUM_JSONRPC_CASE: "EthereumJSONRPC.Case.Nethermind.Mox"
@@ -512,7 +512,7 @@ jobs:
           # Match apps/explorer/config/test.exs config :explorer, Explorer.Repo, database
           POSTGRES_DB: explorer_test
           # match PGPASSWORD for elixir image above
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: postgres!23
           # match PGUSER for elixir image above
           POSTGRES_USER: postgres
 

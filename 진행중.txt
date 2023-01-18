@@ -1,3 +1,5 @@
+cd /home/dev/www/exp2.c4ei.net/docker-compose/logs
+sudo rm -R prod
 cd /home/dev/www/exp2.c4ei.net/docker-compose
 docker-compose -f docker-compose-no-build-geth.yml up -d
 
